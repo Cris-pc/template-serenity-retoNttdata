@@ -1,5 +1,6 @@
 package stepsdefinitions;
 
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -17,6 +18,8 @@ import questions.ClaseAssertText;
 import tasks.Login;
 import tasks.ProcesoCompra;
 
+import java.util.List;
+
 public class LoginStepDefinition {
 
     @Managed /*defino que driver voy a utilizar*/
@@ -29,7 +32,8 @@ public class LoginStepDefinition {
         OnStage.theActorInTheSpotlight().can(BrowseTheWeb.with(hisBrowser));
     }
 
-
+     String user="";
+    String pass="";
 
     @Given("el usuario ingresa a la pagina web")
     public void elUsuarioIngresaALaPaginaWeb() {
@@ -37,14 +41,20 @@ public class LoginStepDefinition {
     }
 
     @When("El usuario ingresa las credenciales de manera correcta")
-    public void elUsuarioIngresaLasCredencialesSeManeraCorrecta() {
-        OnStage.theActorInTheSpotlight().attemptsTo(Login.enter());
-        OnStage.theActorInTheSpotlight().attemptsTo(ProcesoCompra.enter());
+    public void elUsuarioIngresaLasCredencialesDeManeraCorrecta(DataTable userInfo) {
+        List<List<String>> rows = userInfo.asLists(String.class);
+        for(List<String> columns:rows){
+            user=columns.get(0);
+            pass=columns.get(1);
+        }
+        OnStage.theActorInTheSpotlight().attemptsTo(Login.enter(user, pass)); // Usamos el método withCredentials aquí
+        OnStage.theActorInTheSpotlight().attemptsTo(ProcesoCompra.enter());  // Aquí sigue la compra
     }
 
     @Then("El usuario ingresa al home a realizar la compra de 2 productos")
     public void ElUsuarioIngresaAlHomeARealizarLaCompraDe2Productos() {
         OnStage.theActorInTheSpotlight().should(GivenWhenThen.seeThat(ClaseAssertText.esIgual(), Matchers.is("Thank you for your order!")));
     }
+
 
 }
